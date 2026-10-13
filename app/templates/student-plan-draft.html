@@ -1,0 +1,100 @@
+{% extends "authenticated-base.html" %}
+{% block title %}My Plan{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">My Plan</h1>
+      <p class="text-muted mb-0">{{ selected_courses|length }} courses · {{ draft_credits }} total credits</p>
+    </div>
+  </div>
+
+  <form method="post" action="{{ url_for('student_plan_review_start') }}">
+    <input type="hidden" name="course_query" value="{{ course_query }}">
+    <input type="hidden" name="course_type_filter" value="{{ course_type_filter }}">
+    <input type="hidden" name="return_to_draft" value="true">
+
+    <section class="card shadow-sm mb-4" aria-labelledby="my-plan-heading">
+      <div class="card-body">
+        <h2 class="h5 mb-3" id="my-plan-heading">Selected courses</h2>
+
+        {% if selected_courses %}
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Code</th>
+                <th scope="col">Name</th>
+                <th scope="col">Credits</th>
+                <th scope="col" class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for course in selected_courses %}
+              <tr>
+                <td class="fw-semibold">{{ course.code }}</td>
+                <td>{{ course.name }}</td>
+                <td>{{ course.credits }}</td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-danger"
+                          type="submit"
+                          formaction="{{ url_for('student_plan_remove_course') }}"
+                          formnovalidate
+                          name="course_id"
+                          value="{{ course.id }}"
+                          aria-label="Remove {{ course.code }} from plan">
+                    Remove
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row" colspan="2" class="text-end">Total credits</th>
+                <th>{{ draft_credits }}</th>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted border rounded p-3 mb-0">No courses added yet. Edit your plan to choose courses.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="card shadow-sm" aria-labelledby="plan-details-heading">
+      <div class="card-body">
+        <h2 class="h5 mb-3" id="plan-details-heading">Plan details</h2>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="semester">Semester</label>
+            <select class="form-select" id="semester" name="semester" required>
+              <option value="">Choose a semester</option>
+              {% for semester_option in ["Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6"] %}
+              <option value="{{ semester_option }}" {% if semester == semester_option %}selected{% endif %}>{{ semester_option }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="academic_year">Academic year</label>
+            <input class="form-control" id="academic_year" name="academic_year" type="text"
+                   value="{{ academic_year }}" required>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <a class="btn btn-outline-secondary"
+             href="{{ url_for('student_plan_form').include_query_params(course_query=course_query, course_type_filter=course_type_filter) }}">
+            Edit Plan
+          </a>
+          <button type="submit" class="btn btn-primary" {% if not selected_courses %}disabled{% endif %}>
+            Submit for Approval
+          </button>
+        </div>
+      </div>
+    </section>
+  </form>
+</div>
+{% endblock %}

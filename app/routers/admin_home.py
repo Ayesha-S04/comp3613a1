@@ -128,11 +128,13 @@ async def plan_review_submit(
     user: AdminDep,
     db: SessionDep,
     decision: str = Form(...),
-    feedback: str = Form(""),
 ):
     service = AdvisingService(AdvisingRepository(db))
+    if decision != "approved":
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Choose a valid plan decision")
+
     try:
-        service.review_plan(plan_id, user.id, decision, feedback.strip() or None)
+        service.review_plan(plan_id, user.id, decision, None)
     except ValueError as exc:
         if str(exc) == "Plan not found":
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
@@ -155,6 +157,85 @@ async def plan_review_submit(
     return RedirectResponse(
         url=request.url_for("advisor_plan_confirmation", plan_id=plan_id),
         status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.get(
+    "/admin/plan/{plan_id}/reject",
+    response_class=HTMLResponse,
+    name="advisor_reject_plan_view",
+)
+async def advisor_reject_plan_view(
+    request: Request,
+    plan_id: int,
+    user: AdminDep,
+    db: SessionDep,
+):
+    service = AdvisingService(AdvisingRepository(db))
+    try:
+        plan_view = service.get_plan_view(plan_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+    if plan_view["plan"].approval_status != "pending":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pending plan not found")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="advisor-reject-plan.html",
+        context={
+            "user": user,
+            "plan": plan_view["plan"],
+            "student": plan_view["student"],
+        },
+    )
+
+
+@router.post(
+    "/admin/plan/{plan_id}/reject",
+    response_class=HTMLResponse,
+    name="advisor_reject_plan_submit",
+)
+async def advisor_reject_plan_submit(
+    request: Request,
+    plan_id: int,
+    user: AdminDep,
+    db: SessionDep,
+    feedback: str = Form(...),
+):
+    service = AdvisingService(AdvisingRepository(db))
+    rejection_reason = feedback.strip()
+    if not rejection_reason:
+        error_message = "A reason for rejection is required."
+    else:
+        try:
+            service.review_plan(plan_id, user.id, "rejected", rejection_reason)
+        except ValueError as exc:
+            if str(exc) == "Plan not found":
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+            error_message = str(exc)
+        else:
+            return RedirectResponse(
+                url=request.url_for("advisor_plan_confirmation", plan_id=plan_id),
+                status_code=status.HTTP_303_SEE_OTHER,
+            )
+
+    try:
+        plan_view = service.get_plan_view(plan_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+    return templates.TemplateResponse(
+        request=request,
+        name="advisor-reject-plan.html",
+        context={
+            "user": user,
+            "plan": plan_view["plan"],
+            "student": plan_view["student"],
+            "feedback": feedback,
+            "error_message": error_message,
+        },
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
     )
 
 

@@ -138,23 +138,23 @@ Relationship and business-rule notes:
 
 ### MyAdvisor wireframe set
 
-![MyAdvisor wireframe set](wireframes/816043899_wireframes_A1.png)
+![MyAdvisor wireframe set](wireframes/816043899_wireframe_A1.png)
 
 <!-- student-build:wireframe-coverage
 use_case: Track degree progress (Student)
-image: docs/wireframes/816043899_wireframes_A1.png
+image: docs/wireframes/816043899_wireframe_A1.png
 covered: yes
 -->
 
 <!-- student-build:wireframe-coverage
 use_case: Create a semester course plan (Student)
-image: docs/wireframes/816043899_wireframes_A1.png
+image: docs/wireframes/816043899_wireframe_A1.png
 covered: yes
 -->
 
 <!-- student-build:wireframe-coverage
 use_case: Approve or reject semester course plans (Academic advisor)
-image: docs/wireframes/816043899_wireframes_A1.png
+image: docs/wireframes/816043899_wireframe_A1.png
 covered: yes
 -->
 
@@ -177,16 +177,29 @@ The theme was applied through the shared brand tokens in `app/static/css/app.css
 
 Phase 5 verified the advising flows against the Phase 4 wireframe decisions and the acceptance criteria for the advisor review flow:
 
+### Phase 5 polish — student-directed refinements
+
+The student iteratively steered UI and workflow refinements against the wireframe. Student-facing polish includes a consistent active-tab underline, course-type filtering on View Progress and Plan Courses, live keyword search by course code/name, Add/Remove actions in both the Available Courses list and draft, and a dedicated My Plan page with Edit Plan beside Submit for Approval. Advisor-facing polish includes a Pending Plans table with Student ID, Name, Semester, Submission Date, Status, and View action; a full-width Proposed Courses section; Back/Approve/Reject actions on the review page; a separate rejection-reason and confirmation page; and rejection feedback visible from the student's rejected plan details.
+
+Browser observations during polish: signing in as Bob reached the student dashboard, which displayed a rejected semester plan; signing in as admin reached the advisor dashboard, which showed one pending plan, five approved plans, and one rejected plan. The Pending Plans table was also opened and its requested headers and empty state were checked before a pending plan was present. The changed full-width review layout and complete approve/reject round trip have not yet been manually confirmed in the browser.
+
 - Approval flow: the advisor can approve a plan from the review screen, the plan status is updated to `approved`, and a dedicated confirmation page displays the outcome with a `Back to Pending Plans` action.
-- Rejection flow: the advisor must provide feedback before submitting a rejection. Empty feedback triggers a validation error and keeps the advisor on the same review screen.
+- Rejection flow: the review page has Back on the left with Approve Plan and Reject Plan actions on the right. Reject Plan opens a dedicated rejection page where the advisor must enter a reason and confirm; empty feedback is rejected there before the decision is recorded.
 - Decision confirmation: after approval or rejection, the advisor is taken to a dedicated confirmation page with the outcome and a Back to Pending Plans action.
 - Polish: the authenticated navigation was changed from a collapsible side menu to a horizontal top navigation bar to match the wireframes. Brand consistency, navigation labels, and the advisor review UX were refined to match the academic advising identity and Phase 4 design decisions.
 - Advisor navigation: added advisor Dashboard, Pending Plans, Approved Plans, Rejected Plans, Profile, and a circular initials avatar. Status pages show only plans assigned to the signed-in advisor; the avatar links to Profile, and Logout remains available.
 - Student navigation and progress polish: aligned the student top bar to Dashboard, View Progress, Plan Courses, Profile, and the circular initials avatar. Dashboard now presents a degree progress bar, completed/remaining/required credit summaries, recent course progress, and semester-plan status. View Progress is a separate course table with All Courses, Completed, and In Progress filters, showing code, name, credits, type, and status. The avatar opens a profile page for either role.
+- Progress and navigation follow-up polish: the current authenticated navigation tab is underlined consistently for both students and advisors. The View Progress page can filter the course table by Core or Elective while retaining the existing completion-status filter.
 - Student progress type polish: course and program-requirement type defaults are now `core`; existing seeded `required` values are migrated to `core`, and course records can be designated `elective`. The progress table displays the normalized course type.
 - Course catalogue sample data: seeded four additional Computer Science courses idempotently: CS220 Database Systems and CS230 Web Application Development (`core`), plus CS260 User Experience Design and CS280 Introduction to Data Science (`elective`). Each is linked to the BSc Computer Science requirements so the student can see them in progress and semester planning.
 - Catalogue expansion: expanded the BSc Computer Science catalogue to 50 three-credit courses (21 core + 29 electives), updated the program requirement to 93 credits, and ensured every course is associated with the program as core or elective. The dashboard communicates the 21-core plus 10-of-29-elective completion structure.
-- Plan Courses polish: added an Action-column Add button for every available course. Added courses are kept in the signed-in session as an in-progress draft, shown in My Plan with a credit total, and submitted for approval from that review section. The My Plan button is positioned after the available-course table at the bottom of the screen and scrolls to the in-progress draft. The first Submit for Approval action now opens a separate review screen with semester, academic year, credits, prerequisite status, optional advisor comments, an Edit Plan action, and a final submission action. Final submission creates a pending plan and shows a Plan Submitted confirmation page; advisors can see the student's optional comments during plan review. Existing databases receive a nullable `student_comments` column at schema startup. The student confirmed that all three workflows work and that they made code adjustments during polish.
+- Plan Courses polish: added an Action-column Add button for every available course. Added courses are kept in the signed-in session as an in-progress draft and submitted for approval from the separate My Plan page. The first Submit for Approval action opens a separate review screen with semester, academic year, credits, prerequisite status, optional advisor comments, an Edit Plan action, and a final submission action. Final submission creates a pending plan and shows a Plan Submitted confirmation page; advisors can see the student's optional comments during plan review. Existing databases receive a nullable `student_comments` column at schema startup. The student confirmed that all three workflows work and that they made code adjustments during polish.
+- Plan Courses follow-up polish: removed the top Back to Dashboard button and added a live course search by code or name plus an All Types/Core/Elective filter. Search keywords are matched case-insensitively as the student types, and the selected search and type filter remain in place after adding a course.
+- Plan Courses draft polish: selected courses can be removed from both the Available Courses table (where Add toggles to Remove) and My Plan. Removing a course updates the session draft and recalculates its course count and credit total while preserving the current catalog search and type filter.
+- My Plan navigation polish: moved the editable My Plan from below Available Courses to its own page, linked from the catalog's My Plan button. The separate page holds the selected-course table, semester/year fields, course removal, and Submit for Approval; Edit Plan returns to the catalog and sits beside Submit for Approval at the bottom of the draft form.
+- Advisor pending plans polish: the Pending Plans navigation now opens the assigned pending-plan table. It shows Student ID, Name, Semester, Submission Date, Status, and a View action that opens the plan.
+- Advisor review layout polish: the Proposed Courses table now spans the full content width of the plan review page.
+- Rejection feedback visibility: students viewing a rejected semester plan see the advisor's latest rejection reason on the plan details page.
 - Student plan details: each semester plan on the student dashboard is now a link to a detail page showing selected courses, total credits, and approval status. The service verifies the plan belongs to the signed-in student before displaying it.
 - Advisor plan-review polish: the plan review screen now follows the wireframe's two-column Student Information card (student ID, name, year of study, programme in the left column; semester, submission date, status, and credits in the right) and Proposed Courses table (code, name, credits, prerequisite status, and notes column). Existing student profiles receive a safe Year 1 default; the seeded demo student displays Year 2. Prerequisite status is calculated from completed courses, and optional student comments appear above the course table. Both approval and rejection now lead to dedicated decision confirmation pages with a Back to Pending Plans action.
 - Student progress verification: the student confirmed that all three workflows work locally.

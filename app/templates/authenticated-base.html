@@ -28,6 +28,7 @@
     }
 
     .app-navbar .nav-link {
+        position: relative;
         color: var(--brand-ink);
         font-weight: 500;
     }
@@ -35,6 +36,15 @@
     .app-navbar .nav-link:hover,
     .app-navbar .nav-link.active {
         color: var(--brand-accent);
+    }
+
+    .app-navbar .nav-link.active::after {
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.2rem;
+        left: 0.5rem;
+        border-bottom: 2px solid currentColor;
+        content: "";
     }
 
     .app-navbar .account-avatar {
@@ -89,7 +99,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ 'active' if request.url.path == '/admin' or request.url.path == '/admin/plans/pending' or request.url.path.startswith('/admin/plan/') }}"
-                       href="{{ url_for('admin_home_view') }}">Pending Plans</a>
+                       href="{{ url_for('advisor_plans_by_status_view', approval_status='pending') }}">Pending Plans</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ 'active' if request.url.path == '/admin/plans/approved' }}"

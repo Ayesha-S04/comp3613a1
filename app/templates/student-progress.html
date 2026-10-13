@@ -11,11 +11,24 @@
   <nav class="nav nav-pills gap-2 mb-3" aria-label="Filter courses by progress">
     {% for key, label in [('all', 'All Courses'), ('completed', 'Completed'), ('in_progress', 'In Progress')] %}
     <a class="nav-link {{ 'active' if progress.status_filter == key }}"
-       href="{{ url_for('student_progress_view') }}?status_filter={{ key }}">
+       href="{{ url_for('student_progress_view') }}?status_filter={{ key }}&amp;course_type_filter={{ progress.course_type_filter }}">
       {{ label }} <span class="badge text-bg-light ms-1">{{ progress.counts[key] }}</span>
     </a>
     {% endfor %}
   </nav>
+
+  <form class="d-flex align-items-end gap-2 mb-3" method="get" action="{{ url_for('student_progress_view') }}">
+    <input type="hidden" name="status_filter" value="{{ progress.status_filter }}">
+    <div>
+      <label class="form-label mb-1" for="course-type-filter">Course type</label>
+      <select class="form-select" id="course-type-filter" name="course_type_filter">
+        <option value="all" {{ 'selected' if progress.course_type_filter == 'all' }}>All Types</option>
+        <option value="core" {{ 'selected' if progress.course_type_filter == 'core' }}>Core</option>
+        <option value="elective" {{ 'selected' if progress.course_type_filter == 'elective' }}>Elective</option>
+      </select>
+    </div>
+    <button class="btn btn-outline-primary" type="submit">Filter by</button>
+  </form>
 
   {% if progress.courses %}
   <div class="table-responsive bg-white rounded-3 shadow-sm">

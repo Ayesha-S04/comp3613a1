@@ -34,11 +34,20 @@ async def student_progress_view(
     user: AuthDep,
     db: SessionDep,
     status_filter: str = "all",
+    course_type_filter: str = "all",
 ):
     if status_filter not in {"all", "completed", "in_progress"}:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unknown course status filter")
+    if course_type_filter not in {"all", "core", "elective"}:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unknown course type filter")
+    if user.id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authenticated user has no ID")
 
-    progress = AdvisingService(AdvisingRepository(db)).get_student_progress(user.id, status_filter)
+    progress = AdvisingService(AdvisingRepository(db)).get_student_progress(
+        user.id,
+        status_filter,
+        course_type_filter,
+    )
     return templates.TemplateResponse(
         request=request,
         name="student-progress.html",
@@ -54,7 +63,12 @@ async def student_plan_form(
     request: Request,
     user: AuthDep,
     db: SessionDep,
+    course_query: str = "",
+    course_type_filter: str = "all",
 ):
+    if course_type_filter not in {"all", "core", "elective"}:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unknown course type filter")
+
     repo = AdvisingRepository(db)
     service = AdvisingService(repo)
     dashboard = service.get_student_dashboard(user.id)
@@ -70,11 +84,46 @@ async def student_plan_form(
         context={
             "user": user,
             "courses": sorted(dashboard["courses"].values(), key=lambda course: course.code),
+            "course_query": course_query,
+            "course_type_filter": course_type_filter,
             "selected_courses": selected_courses,
             "selected_course_ids": [course.id for course in selected_courses],
             "draft_credits": sum(course.credits for course in selected_courses),
             "semester": request.session.get(f"draft_semester_{user.id}", ""),
             "academic_year": request.session.get(f"draft_academic_year_{user.id}", "2025/2026"),
+        },
+    )
+
+
+@router.get("/app/plan/draft", response_class=HTMLResponse, name="student_plan_draft")
+async def student_plan_draft(
+    request: Request,
+    user: AuthDep,
+    db: SessionDep,
+    course_query: str = "",
+    course_type_filter: str = "all",
+):
+    if course_type_filter not in {"all", "core", "elective"}:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unknown course type filter")
+
+    dashboard = AdvisingService(AdvisingRepository(db)).get_student_dashboard(user.id)
+    draft_course_ids = request.session.get(f"draft_course_ids_{user.id}", [])
+    selected_courses = [
+        dashboard["courses"][course_id]
+        for course_id in draft_course_ids
+        if course_id in dashboard["courses"]
+    ]
+    return templates.TemplateResponse(
+        request=request,
+        name="student-plan-draft.html",
+        context={
+            "user": user,
+            "selected_courses": selected_courses,
+            "draft_credits": sum(course.credits for course in selected_courses),
+            "semester": request.session.get(f"draft_semester_{user.id}", ""),
+            "academic_year": request.session.get(f"draft_academic_year_{user.id}", "2025/2026"),
+            "course_query": course_query,
+            "course_type_filter": course_type_filter,
         },
     )
 
@@ -85,6 +134,8 @@ async def student_plan_add_course(
     user: AuthDep,
     db: SessionDep,
     course_id: int = Form(...),
+    course_query: str = Form(""),
+    course_type_filter: str = Form("all"),
     semester: str | None = Form(None),
     academic_year: str | None = Form(None),
 ):
@@ -110,7 +161,42 @@ async def student_plan_add_course(
         flash(request, str(exc), "danger")
 
     return RedirectResponse(
-        url=request.url_for("student_plan_form"),
+        url=request.url_for("student_plan_form").include_query_params(
+            course_query=course_query,
+            course_type_filter=course_type_filter,
+        ),
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.post("/app/plan/course/remove", name="student_plan_remove_course")
+async def student_plan_remove_course(
+    request: Request,
+    user: AuthDep,
+    db: SessionDep,
+    course_id: int = Form(...),
+    course_query: str = Form(""),
+    course_type_filter: str = Form("all"),
+    semester: str | None = Form(None),
+    academic_year: str | None = Form(None),
+    return_to_draft: bool = Form(False),
+):
+    draft_key = f"draft_course_ids_{user.id}"
+    course_ids = request.session.get(draft_key, [])
+    service = AdvisingService(AdvisingRepository(db))
+    request.session[draft_key] = service.remove_course_from_draft(course_ids, course_id)
+    if semester:
+        request.session[f"draft_semester_{user.id}"] = semester
+    if academic_year:
+        request.session[f"draft_academic_year_{user.id}"] = academic_year
+    flash(request, "Course removed from your plan.", "success")
+
+    destination = "student_plan_draft" if return_to_draft else "student_plan_form"
+    return RedirectResponse(
+        url=request.url_for(destination).include_query_params(
+            course_query=course_query,
+            course_type_filter=course_type_filter,
+        ),
         status_code=status.HTTP_303_SEE_OTHER,
     )
 
@@ -133,7 +219,7 @@ async def student_plan_review_start(
     except ValueError as exc:
         flash(request, str(exc), "danger")
         return RedirectResponse(
-            url=request.url_for("student_plan_form"),
+            url=request.url_for("student_plan_draft"),
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
@@ -165,7 +251,7 @@ async def student_plan_review(
     if not semester or not academic_year:
         flash(request, "Choose a semester and academic year before reviewing your plan.", "danger")
         return RedirectResponse(
-            url=request.url_for("student_plan_form"),
+            url=request.url_for("student_plan_draft"),
             status_code=status.HTTP_303_SEE_OTHER,
         )
 

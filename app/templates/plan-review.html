@@ -9,7 +9,6 @@
       <h1 class="h3 mb-1">Plan review</h1>
       <p class="text-muted mb-0">Review the proposed course load for {{ plan.semester }} {{ plan.academic_year }}.</p>
     </div>
-    <a class="btn btn-outline-secondary" href="{{ url_for('advisor_plans_by_status_view', approval_status='pending') }}">Back to pending plans</a>
   </div>
 
   <section class="card shadow-sm border-0 mb-4" aria-labelledby="student-information-heading">
@@ -68,82 +67,71 @@
   <div class="alert alert-danger mb-4">{{ error_message }}</div>
   {% endif %}
 
-  <div class="row g-4">
-    <div class="col-lg-7">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body">
-          <h2 class="h5 mb-3">Proposed Courses</h2>
-          {% if plan.student_comments %}
-          <div class="alert alert-light border">
-            <strong>Comments from student:</strong> {{ plan.student_comments }}
-          </div>
-          {% endif %}
-          {% if courses %}
-          <div class="table-responsive">
-            <table class="table table-hover align-middle">
-              <thead>
-                <tr>
-                  <th scope="col">Code</th>
-                  <th scope="col">Name</th>
-                  <th scope="col">Credits</th>
-                  <th scope="col">Prereq Met</th>
-                  <th scope="col">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for row in courses %}
-                <tr>
-                  <td class="fw-semibold">{{ row.course.code }}</td>
-                  <td>{{ row.course.name }}</td>
-                  <td>{{ row.course.credits }}</td>
-                  <td>
-                    {% if row.prerequisites_met %}
-                    <span class="badge text-bg-success">Yes</span>
-                    {% else %}
-                    <span class="badge text-bg-warning">No</span>
-                    {% endif %}
-                  </td>
-                  <td class="text-muted">—</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th scope="row" colspan="2" class="text-end">Total credits</th>
-                  <th>{{ total_credits }}</th>
-                  <td colspan="2"></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-          {% else %}
-          <p class="text-muted mb-0">No courses selected.</p>
-          {% endif %}
-        </div>
+  <section class="card shadow-sm border-0 mb-4" aria-labelledby="proposed-courses-heading">
+    <div class="card-body">
+      <h2 class="h5 mb-3" id="proposed-courses-heading">Proposed Courses</h2>
+      {% if plan.student_comments %}
+      <div class="alert alert-light border">
+        <strong>Comments from student:</strong> {{ plan.student_comments }}
       </div>
+      {% endif %}
+      {% if courses %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th scope="col">Code</th>
+              <th scope="col">Name</th>
+              <th scope="col">Credits</th>
+              <th scope="col">Prereq Met</th>
+              <th scope="col">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in courses %}
+            <tr>
+              <td class="fw-semibold">{{ row.course.code }}</td>
+              <td>{{ row.course.name }}</td>
+              <td>{{ row.course.credits }}</td>
+              <td>
+                {% if row.prerequisites_met %}
+                <span class="badge text-bg-success">Yes</span>
+                {% else %}
+                <span class="badge text-bg-warning">No</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">—</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" colspan="2" class="text-end">Total credits</th>
+              <th>{{ total_credits }}</th>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">No courses selected.</p>
+      {% endif %}
     </div>
+  </section>
 
-    <div class="col-lg-5">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body">
-          <h2 class="h5 mb-3">Decision</h2>
-
-          <form method="POST" action="{{ url_for('plan_review_submit', plan_id=plan.id) }}">
-            <div class="mb-3">
-              <label class="form-label">Choose a decision</label>
-              <div class="d-grid gap-2">
-                <button type="submit" name="decision" value="approved" class="btn btn-success">Approve plan</button>
-                <button type="submit" name="decision" value="rejected" class="btn btn-outline-danger">Reject plan</button>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label" for="feedback">Feedback</label>
-              <textarea class="form-control" id="feedback" name="feedback" rows="4" placeholder="Required when rejecting a plan"></textarea>
-            </div>
-          </form>
-        </div>
-      </div>
+  <div class="d-flex justify-content-between align-items-center mt-4">
+    <a class="btn btn-outline-secondary"
+       href="{{ url_for('advisor_plans_by_status_view', approval_status='pending') }}">
+      Back
+    </a>
+    <div class="d-flex gap-2">
+      <form method="POST" action="{{ url_for('plan_review_submit', plan_id=plan.id) }}">
+        <input type="hidden" name="decision" value="approved">
+        <button type="submit" class="btn btn-success">Approve plan</button>
+      </form>
+      <a class="btn btn-outline-danger" href="{{ url_for('advisor_reject_plan_view', plan_id=plan.id) }}">
+        Reject plan
+      </a>
     </div>
   </div>
   {% else %}

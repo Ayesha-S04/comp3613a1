@@ -1,0 +1,34 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Reject Plan{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <header class="mb-4">
+    <h1 class="h3 mb-1">Reject Plan</h1>
+    <p class="text-muted mb-0">
+      Provide a reason for rejecting {{ student.first_name }} {{ student.last_name }}'s
+      {{ plan.semester }} {{ plan.academic_year }} plan.
+    </p>
+  </header>
+
+  {% if error_message %}
+  <div class="alert alert-danger" role="alert">{{ error_message }}</div>
+  {% endif %}
+
+  <section class="card shadow-sm" aria-labelledby="rejection-reason-heading">
+    <div class="card-body">
+      <form method="post" action="{{ url_for('advisor_reject_plan_submit', plan_id=plan.id) }}">
+        <div class="mb-4">
+          <label class="form-label" for="feedback" id="rejection-reason-heading">Reason for rejection</label>
+          <textarea class="form-control" id="feedback" name="feedback" rows="5"
+                    placeholder="Enter feedback for the student..." required>{{ feedback or '' }}</textarea>
+        </div>
+        <div class="d-flex justify-content-between">
+          <a class="btn btn-outline-secondary" href="{{ url_for('plan_review_view', plan_id=plan.id) }}">Cancel</a>
+          <button class="btn btn-danger" type="submit">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

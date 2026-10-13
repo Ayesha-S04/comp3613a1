@@ -67,7 +67,12 @@ class AdvisingService:
             "plans": all_plans,
         }
 
-    def get_student_progress(self, user_id: int, status_filter: str = "all") -> dict[str, Any]:
+    def get_student_progress(
+        self,
+        user_id: int,
+        status_filter: str = "all",
+        course_type_filter: str = "all",
+    ) -> dict[str, Any]:
         dashboard = self.get_student_dashboard(user_id)
         student = dashboard["student"]
         requirements = self.repo.get_program_requirements(student.program_id) if student.program_id else []
@@ -75,7 +80,8 @@ class AdvisingService:
         courses = [
             course
             for course in dashboard["courses"].values()
-            if not program_course_ids or course.id in program_course_ids
+            if (not program_course_ids or course.id in program_course_ids)
+            and (course_type_filter == "all" or course.course_type == course_type_filter)
         ]
 
         history_by_course: dict[int, list[Any]] = {}
@@ -98,6 +104,7 @@ class AdvisingService:
             "program": dashboard["program"],
             "courses": course_rows,
             "status_filter": status_filter,
+            "course_type_filter": course_type_filter,
             "counts": {
                 "all": len(courses),
                 "completed": sum(
@@ -124,6 +131,9 @@ class AdvisingService:
             updated_draft.append(course_id)
 
         return updated_draft
+
+    def remove_course_from_draft(self, course_ids: list[int], course_id: int) -> list[int]:
+        return [existing_id for existing_id in course_ids if existing_id != course_id]
 
     def get_plan_review(self, user_id: int, course_ids: list[int]) -> dict[str, Any]:
         dashboard = self.get_student_dashboard(user_id)
@@ -166,10 +176,16 @@ class AdvisingService:
             for row in self.repo.get_plan_courses(plan.id)
             if (course := self.repo.get_course(row.course_id)) is not None
         ]
+        rejection_review = (
+            self.repo.get_latest_plan_review(plan.id, "rejected")
+            if plan.approval_status == "rejected"
+            else None
+        )
         return {
             "plan": plan,
             "courses": courses,
             "total_credits": sum(course.credits for course in courses),
+            "rejection_feedback": rejection_review.feedback if rejection_review else None,
         }
 
     def create_plan(
@@ -241,11 +257,15 @@ class AdvisingService:
 
         plan_summaries = []
         for plan in plans:
+            student = self.repo.get_student_profile(plan.student_id)
+            if student is None:
+                raise ValueError(f"Student profile not found for plan {plan.id}")
             course_rows = self.repo.get_plan_courses(plan.id)
             course_list = [self.repo.get_course(row.course_id) for row in course_rows]
 
             plan_summaries.append({
                 "plan": plan,
+                "student": student,
                 "courses": [course for course in course_list if course is not None],
             })
 

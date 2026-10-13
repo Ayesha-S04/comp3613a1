@@ -301,6 +301,13 @@ class AdvisingRepository:
         self.db.refresh(review)
         return review
 
+    def get_latest_plan_review(self, plan_id: int, decision: str) -> PlanReview | None:
+        return self.db.exec(
+            select(PlanReview)
+            .where(PlanReview.plan_id == plan_id, PlanReview.decision == decision)
+            .order_by(PlanReview.review_date.desc(), PlanReview.id.desc())
+        ).first()
+
     def update_plan_status(self, plan_id: int, approval_status: str):
         plan = self.db.get(SemesterPlan, plan_id)
         if plan is None:
