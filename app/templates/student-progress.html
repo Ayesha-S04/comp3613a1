@@ -1,0 +1,57 @@
+{% extends "authenticated-base.html" %}
+{% block title %}View Progress{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <header class="mb-4">
+    <h1 class="h3 mb-1">Course Progress</h1>
+    <p class="text-muted mb-0">{{ progress.program.name if progress.program else 'Degree program' }} course requirements and completion status.</p>
+  </header>
+
+  <nav class="nav nav-pills gap-2 mb-3" aria-label="Filter courses by progress">
+    {% for key, label in [('all', 'All Courses'), ('completed', 'Completed'), ('in_progress', 'In Progress')] %}
+    <a class="nav-link {{ 'active' if progress.status_filter == key }}"
+       href="{{ url_for('student_progress_view') }}?status_filter={{ key }}">
+      {{ label }} <span class="badge text-bg-light ms-1">{{ progress.counts[key] }}</span>
+    </a>
+    {% endfor %}
+  </nav>
+
+  {% if progress.courses %}
+  <div class="table-responsive bg-white rounded-3 shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Name</th>
+          <th scope="col">Credits</th>
+          <th scope="col">Type</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in progress.courses %}
+        <tr>
+          <td class="fw-semibold">{{ item.course.code }}</td>
+          <td>{{ item.course.name }}</td>
+          <td>{{ item.course.credits }}</td>
+          <td>{{ item.course.course_type|title }}</td>
+          <td>
+            {% if item.status == 'completed' %}
+            <span class="badge text-bg-success">Completed</span>
+            {% elif item.status == 'in_progress' %}
+            <span class="badge text-bg-primary">In Progress</span>
+            {% else %}
+            <span class="badge text-bg-light border text-secondary">Not Started</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-secondary">There are no courses in this progress category.</div>
+  {% endif %}
+</div>
+{% endblock %}

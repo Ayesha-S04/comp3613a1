@@ -1,0 +1,131 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Plan Courses{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Plan Courses</h1>
+      <p class="text-muted mb-0">Add courses to your plan, then review it before submitting.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('user_home_view') }}">Back to dashboard</a>
+  </div>
+
+  <form method="POST" action="{{ url_for('student_plan_review_start') }}">
+    <section class="card shadow-sm border-0 mb-4" aria-labelledby="available-courses-heading">
+      <div class="card-body">
+        <h2 class="h5 mb-3" id="available-courses-heading">Available courses</h2>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Code</th>
+                <th scope="col">Name</th>
+                <th scope="col">Credits</th>
+                <th scope="col">Type</th>
+                <th scope="col" class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for course in courses %}
+              {% set is_selected = course.id in selected_course_ids %}
+              <tr>
+                <td class="fw-semibold">{{ course.code }}</td>
+                <td>{{ course.name }}</td>
+                <td>{{ course.credits }}</td>
+                <td>{{ course.course_type|title }}</td>
+                <td class="text-end">
+                  <button
+                    class="btn btn-sm {{ 'btn-success' if is_selected else 'btn-outline-primary' }}"
+                    type="submit"
+                    formaction="{{ url_for('student_plan_add_course') }}"
+                    formnovalidate
+                    name="course_id"
+                    value="{{ course.id }}"
+                    {% if is_selected %}disabled aria-label="{{ course.code }} already added to plan"{% else %}aria-label="Add {{ course.code }} to plan"{% endif %}
+                  >{{ "Added" if is_selected else "Add" }}</button>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">No courses are currently available.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+          <a class="btn btn-primary" href="#my-plan">My Plan ({{ selected_courses|length }})</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="card shadow-sm border-0" id="my-plan" aria-labelledby="my-plan-heading">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="h5 mb-1" id="my-plan-heading">My Plan</h2>
+            <p class="text-muted mb-0">{{ selected_courses|length }} courses · {{ draft_credits }} total credits</p>
+          </div>
+        </div>
+
+        {% if selected_courses %}
+        <div class="table-responsive mb-4">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Code</th>
+                <th scope="col">Name</th>
+                <th scope="col">Credits</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for course in selected_courses %}
+              <tr>
+                <td class="fw-semibold">{{ course.code }}</td>
+                <td>{{ course.name }}</td>
+                <td>{{ course.credits }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted border rounded p-3 mb-4">No courses added yet. Choose Add beside a course to begin your plan.</p>
+        {% endif %}
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="semester">Semester</label>
+            <select class="form-select" id="semester" name="semester" required>
+              <option value="">Choose a semester</option>
+              {% for semester_option in ["Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6"] %}
+              <option value="{{ semester_option }}" {% if semester == semester_option %}selected{% endif %}>{{ semester_option }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="academic_year">Academic year</label>
+            <input
+              class="form-control"
+              id="academic_year"
+              name="academic_year"
+              type="text"
+              value="{{ academic_year }}"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+          <button type="submit" class="btn btn-primary btn-lg" {% if not selected_courses %}disabled{% endif %}>
+            Submit for approval
+          </button>
+        </div>
+      </div>
+    </section>
+  </form>
+</div>
+{% endblock %}

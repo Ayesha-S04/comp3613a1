@@ -1,0 +1,59 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Advisor dashboard{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <header class="mb-4">
+    <h1 class="h3 mb-1">Advisor dashboard</h1>
+    <p class="text-muted mb-0">A summary of semester plans assigned for your review.</p>
+  </header>
+
+  <div class="row g-3 mb-4">
+    {% for status, label, color in [
+      ('pending', 'Pending plans', 'primary'),
+      ('approved', 'Approved plans', 'success'),
+      ('rejected', 'Rejected plans', 'danger')
+    ] %}
+    <div class="col-sm-6 col-xl-4">
+      <a class="card h-100 text-decoration-none shadow-sm border-0" href="{{ url_for('advisor_plans_by_status_view', approval_status=status) }}">
+        <div class="card-body">
+          <div class="small text-uppercase text-muted">{{ label }}</div>
+          <div class="display-6 fw-semibold text-{{ color }}">{{ dashboard.counts[status] }}</div>
+          <span class="text-{{ color }}">View plans</span>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <section class="card shadow-sm border-0">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Pending plans</h2>
+        <a href="{{ url_for('admin_home_view') }}">View all pending</a>
+      </div>
+      {% if dashboard.plans %}
+      <div class="list-group list-group-flush">
+        {% for item in dashboard.plans %}
+        <a class="list-group-item list-group-item-action px-0" href="{{ url_for('plan_review_view', plan_id=item.plan.id) }}">
+          <div class="d-flex justify-content-between gap-3">
+            <div>
+              <div class="fw-semibold">{{ item.plan.semester }} {{ item.plan.academic_year }}</div>
+              <small class="text-muted">Plan #{{ item.plan.id }}</small>
+            </div>
+            <div class="text-end">
+              {% for course in item.courses %}
+              <span class="badge text-bg-light border">{{ course.code }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">There are no pending plans assigned to you.</p>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

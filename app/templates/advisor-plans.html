@@ -1,0 +1,50 @@
+{% extends "authenticated-base.html" %}
+{% block title %}{{ approval_status|title }} Plans{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <header class="mb-4">
+    <h1 class="h3 mb-1">{{ approval_status|title }} Plans</h1>
+    <p class="text-muted mb-0">Semester plans assigned to you with {{ approval_status }} status.</p>
+  </header>
+
+  {% if plans %}
+  <div class="table-responsive bg-white rounded-3 shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Plan</th>
+          <th scope="col">Semester</th>
+          <th scope="col">Submitted</th>
+          <th scope="col">Courses</th>
+          <th scope="col">Status</th>
+          {% if approval_status == 'pending' %}<th scope="col">Action</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in plans %}
+        <tr>
+          <td>#{{ item.plan.id }}</td>
+          <td>{{ item.plan.semester }} {{ item.plan.academic_year }}</td>
+          <td>{{ item.plan.submission_date.strftime('%d %b %Y') }}</td>
+          <td>
+            {% for course in item.courses %}
+            <span class="badge text-bg-light border">{{ course.code }}</span>
+            {% else %}
+            <span class="text-muted">No courses</span>
+            {% endfor %}
+          </td>
+          <td><span class="badge text-bg-{{ 'primary' if approval_status == 'pending' else 'success' if approval_status == 'approved' else 'danger' }}">{{ item.plan.approval_status|title }}</span></td>
+          {% if approval_status == 'pending' %}
+          <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('plan_review_view', plan_id=item.plan.id) }}">View</a></td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-secondary">No {{ approval_status }} plans assigned to you.</div>
+  {% endif %}
+</div>
+{% endblock %}

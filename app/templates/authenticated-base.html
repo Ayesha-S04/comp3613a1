@@ -8,53 +8,65 @@
     }
 
     #wrapper {
-        display: flex;
         min-height: 100vh;
     }
 
-    #sidebar {
-        min-width: 250px;
-        max-width: 250px;
-        min-height: 100vh;
-        transition: all 0.3s;
-        background: var(--brand-sidebar);
-        color: #fff;
+    .app-navbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #fff;
+        border-bottom: 1px solid #dee2e6;
+        box-shadow: 0 0.25rem 0.75rem rgba(19, 49, 77, 0.08);
     }
 
-    #sidebar.collapsed {
-        margin-left: -250px;
+    .app-navbar .brand-wordmark {
+        color: var(--brand-sidebar);
+        font-size: 1.25rem;
+        text-decoration: none;
+        white-space: nowrap;
     }
 
-    #sidebar .nav-link {
-        color: var(--brand-sidebar-text);
+    .app-navbar .nav-link {
+        color: var(--brand-ink);
         font-weight: 500;
     }
 
-    #sidebar .nav-link:hover,
-    #sidebar .nav-link.active {
-        color: #fff;
-        background-color: color-mix(in srgb, var(--brand-accent) 55%, #000);
-        border-radius: 0.5rem;
+    .app-navbar .nav-link:hover,
+    .app-navbar .nav-link.active {
+        color: var(--brand-accent);
     }
 
-    #sidebar .brand-wordmark {
+    .app-navbar .account-avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
         color: #fff;
-        font-size: 1.25rem;
-        text-align: center;
-        margin: 1rem 0 1.5rem;
+        background: var(--brand-accent);
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .app-navbar .account-avatar:hover,
+    .app-navbar .account-avatar:focus-visible {
+        color: #fff;
+        background: var(--brand-sidebar);
     }
 
     #content {
-        width: 100%;
         padding: 1rem;
-        transition: all 0.3s;
         display: flex;
         flex-direction: column;
         background-color: #f4f6f8;
     }
 
-    .navbar {
-        border-bottom: 1px solid #dee2e6;
+    @media (max-width: 767.98px) {
+        .app-navbar .navbar-nav {
+            padding-top: 0.5rem;
+        }
     }
 </style>
 {% block additional_styles %}{% endblock %}
@@ -62,36 +74,61 @@
 
 {% block content %}
 <div id="wrapper">
-    <nav id="sidebar" class="p-3 d-flex flex-column vh-100">
-        <div class="brand-wordmark">FastStarter</div>
-
-        <ul class="nav nav-pills flex-column gap-2 flex-grow-1">
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app') }}"
-                   href="{{ url_for('user_home_view') }}">
-                    <span class="material-symbols-outlined me-2">home</span>
-                    Home
-                </a>
-            </li>
-            <li class="nav-item mt-auto">
-                <a class="nav-link d-flex align-items-center text-danger" href="{{ url_for('logout') }}">
-                    <span class="material-symbols-outlined me-2">logout</span>
-                    Logout
-                </a>
-            </li>
-        </ul>
+    <nav class="navbar navbar-expand-md app-navbar px-3 px-lg-4">
+        <a class="brand-wordmark" href="{{ url_for('index_view') }}">MyAdvisor</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#app-navigation"
+                aria-controls="app-navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="app-navigation">
+            <ul class="navbar-nav ms-md-4 me-auto gap-md-2">
+                {% if user.role == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.url.path == '/admin/dashboard' }}"
+                       href="{{ url_for('advisor_dashboard_view') }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.url.path == '/admin' or request.url.path == '/admin/plans/pending' or request.url.path.startswith('/admin/plan/') }}"
+                       href="{{ url_for('admin_home_view') }}">Pending Plans</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.url.path == '/admin/plans/approved' }}"
+                       href="{{ url_for('advisor_plans_by_status_view', approval_status='approved') }}">Approved Plans</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.url.path == '/admin/plans/rejected' }}"
+                       href="{{ url_for('advisor_plans_by_status_view', approval_status='rejected') }}">Rejected Plans</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.url.path == '/app' }}"
+                       href="{{ url_for('user_home_view') }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.url.path.startswith('/app/progress') }}"
+                       href="{{ url_for('student_progress_view') }}">View Progress</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.url.path.startswith('/app/plan') }}"
+                       href="{{ url_for('student_plan_form') }}">Plan Courses</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.url.path == '/profile' }}"
+                       href="{{ url_for('profile_view') }}">Profile</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center gap-3 py-2 py-md-0">
+                <span class="fw-semibold d-none d-lg-inline">Welcome, {{ user.username }}</span>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('logout') }}">Logout</a>
+                {% set account_initials = user.username[:2]|upper %}
+                <a class="account-avatar" href="{{ url_for('profile_view') }}"
+                   aria-label="Profile for {{ user.username }}" title="{{ user.username }}">{{ account_initials }}</a>
+            </div>
+        </div>
     </nav>
 
     <div id="content">
-        <nav class="navbar navbar-expand-lg bg-white mb-4 px-3 rounded-3 shadow-sm">
-            <button class="btn btn-outline-secondary" id="menu-toggle" type="button">
-                <span class="material-symbols-outlined md-dark">menu</span>
-            </button>
-            <div class="ms-auto d-flex align-items-center gap-3">
-                <span class="fw-semibold">Welcome, {{ user.username }}</span>
-            </div>
-        </nav>
-
         <div class="row">
             <div class="col-12">
                 {% for message in get_flashed_messages(request) %}
@@ -103,11 +140,5 @@
         {% block subpage_content %}{% endblock %}
     </div>
 </div>
-
-<script>
-    document.getElementById("menu-toggle").addEventListener("click", function () {
-        document.getElementById("sidebar").classList.toggle("collapsed");
-    });
-</script>
 {% block subpage_scripts %}{% endblock %}
 {% endblock %}

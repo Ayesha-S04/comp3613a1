@@ -1,0 +1,126 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Student dashboard{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Dashboard</h1>
+      <p class="text-muted mb-0">Welcome {{ dashboard.student.first_name }}. Here is your degree progress at a glance.</p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('student_plan_form') }}">Plan Courses</a>
+  </div>
+
+  <section class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+        <div>
+          <div class="small text-uppercase text-muted">Degree program</div>
+          <h2 class="h4 mb-0">{{ dashboard.program.name if dashboard.program else 'Unassigned' }}</h2>
+        </div>
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('student_progress_view') }}">View Progress</a>
+      </div>
+      <div class="d-flex justify-content-between small mb-2">
+        <span>Degree progress</span>
+        <span class="fw-semibold">{{ dashboard.progress_percent }}%</span>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Degree progress"
+           aria-valuenow="{{ dashboard.progress_percent }}" aria-valuemin="0" aria-valuemax="100" style="height: 0.85rem;">
+        <div class="progress-bar" style="width: {{ dashboard.progress_percent }}%"></div>
+      </div>
+      <p class="small text-muted mt-3 mb-0">
+        {{ dashboard.core_course_count }} core courses required, plus {{ dashboard.elective_courses_required }}
+        electives from {{ dashboard.elective_option_count }} available options.
+      </p>
+    </div>
+  </section>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="small text-uppercase text-muted">Completed</div>
+          <h2 class="h4 mt-2 mb-1">{{ dashboard.completed_credits }} credits</h2>
+          <div class="text-muted">{{ dashboard.completed_count }} courses completed</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="small text-uppercase text-muted">Remaining</div>
+          <h2 class="h4 mt-2 mb-1">{{ dashboard.remaining_credits }} credits</h2>
+          <div class="text-muted">To meet your degree requirement</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="small text-uppercase text-muted">Total required</div>
+          <h2 class="h4 mt-2 mb-1">{{ dashboard.total_credits }} credits</h2>
+          <div class="text-muted">Required by your degree program</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="h5 mb-0">Recent course progress</h3>
+            <a href="{{ url_for('student_progress_view') }}">View all</a>
+          </div>
+          {% if dashboard.course_history %}
+          <div class="list-group list-group-flush">
+            {% for entry in dashboard.course_history[:4] %}
+            {% set course = dashboard.courses.get(entry.course_id) %}
+            {% if course %}
+            <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-semibold">{{ course.code }} — {{ course.name }}</div>
+                <small class="text-muted">{{ entry.semester }}, {{ entry.academic_year }}</small>
+              </div>
+              <span class="badge bg-success-subtle text-success-emphasis rounded-pill">{{ entry.completion_status | title }}</span>
+            </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted mb-0">No course history yet. Your course status will appear here.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h3 class="h5 mb-3">Semester plans</h3>
+          {% if dashboard.plans %}
+          <div class="list-group list-group-flush">
+            {% for plan in dashboard.plans %}
+            <a class="list-group-item list-group-item-action px-0 text-decoration-none"
+               href="{{ url_for('student_plan_detail', plan_id=plan.id) }}">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-semibold">{{ plan.semester }} {{ plan.academic_year }}</div>
+                  <small class="text-muted">Status: {{ plan.approval_status | title }}</small>
+                </div>
+                <span class="small text-primary">View plan <span aria-hidden="true">→</span></span>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted mb-3">You have not created a semester plan yet.</p>
+          <a class="btn btn-outline-primary btn-sm" href="{{ url_for('student_plan_form') }}">Create a plan</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

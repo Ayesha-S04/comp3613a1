@@ -3,6 +3,7 @@ import threading
 import time
 from contextlib import contextmanager
 
+from sqlalchemy import inspect, text
 from sqlalchemy.exc import DBAPIError, OperationalError, ProgrammingError
 from sqlmodel import SQLModel, Session, create_engine
 
@@ -38,6 +39,16 @@ def create_db_and_tables() -> None:
     import app.models  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
+    plan_columns = {column["name"] for column in inspect(engine).get_columns("semesterplan")}
+    if "student_comments" not in plan_columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE semesterplan ADD COLUMN student_comments TEXT"))
+    student_columns = {column["name"] for column in inspect(engine).get_columns("studentprofile")}
+    if "year_of_study" not in student_columns:
+        with engine.begin() as connection:
+            connection.execute(
+                text("ALTER TABLE studentprofile ADD COLUMN year_of_study INTEGER NOT NULL DEFAULT 1")
+            )
 
 
 def drop_all() -> None:

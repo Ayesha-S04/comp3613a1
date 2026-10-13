@@ -1,0 +1,24 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Plan {{ plan.approval_status|title }}{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-5">
+  <section class="card shadow-sm border-0 mx-auto text-center" style="max-width: 42rem">
+    <div class="card-body p-5">
+      {% if decision == "approved" %}
+      <div class="display-4 text-success mb-3" aria-hidden="true">✓</div>
+      <h1 class="h3 mb-2">Plan Approved</h1>
+      <p class="lead mb-4">The student can see the approved status on their dashboard.</p>
+      {% else %}
+      <div class="display-4 text-danger mb-3" aria-hidden="true">×</div>
+      <h1 class="h3 mb-2">Plan Rejected</h1>
+      <p class="lead mb-4">The student can see your decision on their dashboard.</p>
+      {% endif %}
+      <p class="text-muted mb-4">
+        {{ student.first_name }} {{ student.last_name }} · {{ plan.semester }} {{ plan.academic_year }}
+      </p>
+      <a class="btn btn-primary" href="{{ url_for('advisor_plans_by_status_view', approval_status='pending') }}">Back to pending plans</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,9 +1,38 @@
 {% extends "authenticated-base.html" %}
-{% block title %}Admin{% endblock %}
+{% block title %}Advisor dashboard{% endblock %}
 
 {% block subpage_content %}
-<div class="container-fluid py-2">
-  <h1 class="h4 mb-2">Admin</h1>
-  <p class="text-muted mb-0">Admin workflow screens replace this shell in Phase 5 implement.</p>
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Pending plans</h1>
+      <p class="text-muted mb-0">Review submitted semester plans awaiting advisor approval.</p>
+    </div>
+  </div>
+
+  {% if dashboard.plans %}
+  <div class="list-group">
+    {% for item in dashboard.plans %}
+    {% set plan = item.plan %}
+    {% set courses = item.courses %}
+    <a class="list-group-item list-group-item-action" href="{{ url_for('plan_review_view', plan_id=plan.id) }}">
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+          <div class="fw-semibold">{{ plan.semester }} {{ plan.academic_year }}</div>
+          <small class="text-muted">Plan ID #{{ plan.id }}</small>
+        </div>
+        <span class="badge text-bg-primary rounded-pill">{{ plan.approval_status | title }}</span>
+      </div>
+      <div class="mt-3">
+        {% for course in courses %}
+        <span class="badge text-bg-light border me-2 mb-1">{{ course.code }}</span>
+        {% endfor %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-secondary">No pending plans need review.</div>
+  {% endif %}
 </div>
 {% endblock %}

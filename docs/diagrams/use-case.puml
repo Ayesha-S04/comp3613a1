@@ -1,0 +1,36 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+skinparam actorBorderColor #1B365D
+skinparam actorFontColor #1E232D
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B365D
+skinparam usecaseFontColor #1E232D
+skinparam rectangleBorderColor #1B365D
+skinparam rectangleBackgroundColor #F8FAFC
+skinparam arrowColor #1B365D
+
+actor "Student" as Student
+
+rectangle "MyAdvisor" {
+  usecase "Track Degree Progress" as Track_Degree_Progress
+  usecase "View Degree Status" as View_Degree_Status
+  usecase "Create Semester Course Plan" as Create_Semester_Course_Plan
+  usecase "Check Course Requirements" as Check_Course_Requirements
+  usecase "Approve or Reject Semester Course Plans" as Approve_or_Reject_Semester_Course_Plans
+  usecase "Review Submitted Course Plan" as Review_Submitted_Course_Plan
+  usecase "Provide Rejection Feedback" as Provide_Rejection_Feedback
+}
+
+actor "Academic Advisor" as Academic_Advisor
+
+Student --> Track_Degree_Progress
+Track_Degree_Progress ..> View_Degree_Status : <<include>>
+Student --> Create_Semester_Course_Plan
+Create_Semester_Course_Plan ..> Check_Course_Requirements : <<include>>
+Approve_or_Reject_Semester_Course_Plans <-- Academic_Advisor
+Approve_or_Reject_Semester_Course_Plans ..> Review_Submitted_Course_Plan : <<include>>
+Provide_Rejection_Feedback <-- Academic_Advisor
+Provide_Rejection_Feedback ..> Approve_or_Reject_Semester_Course_Plans : <<extend>>
+
+@enduml

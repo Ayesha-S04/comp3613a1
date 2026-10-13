@@ -1,0 +1,18 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Plan submitted{% endblock %}
+
+{% block subpage_content %}
+<div class="container py-5">
+  <section class="card shadow-sm border-0 mx-auto text-center" style="max-width: 42rem">
+    <div class="card-body p-5">
+      <div class="display-4 text-success mb-3" aria-hidden="true">✓</div>
+      <h1 class="h3 mb-2">Plan Submitted</h1>
+      <p class="lead mb-4">Your plan is awaiting advisor approval.</p>
+      <div class="text-muted mb-4">
+        {{ plan.semester }} {{ plan.academic_year }} · {{ total_credits }} credits · {{ courses|length }} courses
+      </div>
+      <a class="btn btn-primary" href="{{ url_for('user_home_view') }}">Back to Dashboard</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

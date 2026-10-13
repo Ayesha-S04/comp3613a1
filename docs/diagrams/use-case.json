@@ -1,0 +1,38 @@
+{
+  "system": "MyAdvisor",
+  "actors": [
+    {"name": "Student", "side": "left"},
+    {"name": "Academic Advisor", "side": "right"}
+  ],
+  "use_cases": [
+    {
+      "name": "Track Degree Progress",
+      "actors": ["Student"],
+      "includes": ["View Degree Status"]
+    },
+    {
+      "name": "View Degree Status"
+    },
+    {
+      "name": "Create Semester Course Plan",
+      "actors": ["Student"],
+      "includes": ["Check Course Requirements"]
+    },
+    {
+      "name": "Check Course Requirements"
+    },
+    {
+      "name": "Approve or Reject Semester Course Plans",
+      "actors": ["Academic Advisor"],
+      "includes": ["Review Submitted Course Plan"]
+    },
+    {
+      "name": "Review Submitted Course Plan"
+    },
+    {
+      "name": "Provide Rejection Feedback",
+      "actors": ["Academic Advisor"],
+      "extends": ["Approve or Reject Semester Course Plans"]
+    }
+  ]
+}

@@ -1,7 +1,9 @@
-from app.repositories.user import UserRepository
-from app.utilities.security import encrypt_password, verify_password, create_access_token
-from app.schemas.user import RegularUserCreate
 from typing import Optional
+
+from app.repositories.user import UserRepository
+from app.schemas.user import RegularUserCreate
+from app.utilities.security import create_access_token, encrypt_password, verify_password
+
 
 class AuthService:
     def __init__(self, user_repo: UserRepository):
@@ -16,8 +18,9 @@ class AuthService:
 
     def register_user(self, username: str, email: str, password: str):
         new_user = RegularUserCreate(
-            username=username, 
-            email=email, 
-            password=encrypt_password(password)
+            username=username,
+            email=email,
+            password=encrypt_password(password),
+            role="regular_user",
         )
         return self.user_repo.create(new_user)

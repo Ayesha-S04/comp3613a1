@@ -1,14 +1,13 @@
 :root {
-  /* Phase 5 theming: Guide overwrites these from docs/report.md preferences */
-  --brand-name: "FastStarter";
-  --brand-bg: #0c1218;
-  --brand-surface: #f7f4ef;
-  --brand-ink: #14202b;
-  --brand-muted: #6a7a88;
-  --brand-accent: #c45c26;
-  --brand-accent-2: #2a6f6b;
-  --brand-sidebar: #14202b;
-  --brand-sidebar-text: #a8b4bf;
+  --brand-name: "MyAdvisor";
+  --brand-bg: #0d2540;
+  --brand-surface: #f4f8fb;
+  --brand-ink: #1a2d3d;
+  --brand-muted: #5a7287;
+  --brand-accent: #1a73b8;
+  --brand-accent-2: #3ca3a0;
+  --brand-sidebar: #13314d;
+  --brand-sidebar-text: #d8e9f9;
   --brand-font-display: "Fraunces", Georgia, serif;
   --brand-font-body: "Source Sans 3", "Segoe UI", sans-serif;
   --brand-radius: 0.85rem;

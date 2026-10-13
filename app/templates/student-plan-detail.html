@@ -1,0 +1,71 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Semester plan details{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Semester plan</h1>
+      <p class="text-muted mb-0">{{ plan.semester }} {{ plan.academic_year }}</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('user_home_view') }}">Back to dashboard</a>
+  </div>
+
+  {% set status_style = 'warning' if plan.approval_status == 'pending' else ('success' if plan.approval_status == 'approved' else 'danger') %}
+  <section class="card shadow-sm border-0 mb-4" aria-label="Plan status">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <div class="small text-uppercase text-muted">Approval status</div>
+        <div class="h5 mb-0">{{ plan.approval_status|title }}</div>
+      </div>
+      <span class="badge text-bg-{{ status_style }}">{{ plan.approval_status|title }}</span>
+    </div>
+  </section>
+
+  <section class="card shadow-sm border-0">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Selected courses</h2>
+        <span class="text-muted">{{ courses|length }} courses · {{ total_credits }} credits</span>
+      </div>
+
+      {% if courses %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Code</th>
+              <th scope="col">Name</th>
+              <th scope="col">Credits</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for course in courses %}
+            <tr>
+              <td class="fw-semibold">{{ course.code }}</td>
+              <td>{{ course.name }}</td>
+              <td>{{ course.credits }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" colspan="2" class="text-end">Total credits</th>
+              <th>{{ total_credits }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">This plan has no courses.</p>
+      {% endif %}
+
+      {% if plan.student_comments %}
+      <div class="alert alert-light border mt-4 mb-0">
+        <strong>Your comments:</strong> {{ plan.student_comments }}
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}
