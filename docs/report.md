@@ -303,10 +303,10 @@ https://
 
 ## Logins
 
-Every account a marker needs, including extra users you added. Starter accounts:
+Every account a marker needs, including extra users you added. Demo accounts seeded by `python manage.py init` (not displayed on the public site):
 
-- bob / bobpass — regular user
-- admin / adminpass — admin
+- bob / bobpass — student (regular user)
+- admin / adminpass — academic advisor (admin)
 
 ## YouTube URL
 

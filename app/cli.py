@@ -87,7 +87,7 @@ def cmd_seed(args: argparse.Namespace) -> None:
             created += 1
 
     print(f"Seed done — created {created}, skipped {skipped}.")
-    print("Login with bob/bobpass or admin/adminpass")
+    print("Demo accounts seeded. Marker credentials are in docs/report.md.")
 
 
 def cmd_run(args: argparse.Namespace) -> None:
