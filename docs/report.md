@@ -22,88 +22,88 @@ Phase 2 notes: the Student owns degree tracking and semester planning; the Acade
 
 ## Model diagram
 
-Phase 3 first draft, using the student-provided entities and properties. Data types and FK optionality were not specified, so attributes use `unspecified`; revisit the model in Phase 5 if polish requires changes.
+Phase 3 first draft, using the student-provided entities and properties. In Phase 5 polish, the placeholder types were replaced with types aligned to the implemented SQLModel fields where available.
 
 ```mermaid
 erDiagram
   Student {
-    unspecified student_id PK
-    unspecified first_name
-    unspecified last_name
-    unspecified email
-    unspecified enrollment_year
+    int student_id PK
+    string first_name
+    string last_name
+    string email
+    int enrollment_year
     int year_of_study
-    unspecified program_id FK
+    int program_id FK
   }
 
   AcademicAdvisor {
-    unspecified advisor_id PK
-    unspecified first_name
-    unspecified last_name
-    unspecified email
+    int advisor_id PK
+    string first_name
+    string last_name
+    string email
   }
 
   DegreeProgram {
-    unspecified program_id PK
-    unspecified program_name
+    int program_id PK
+    string program_name
     int total_credits_required
   }
 
   Course {
-    unspecified course_id PK
-    unspecified course_code
-    unspecified course_name
-    unspecified credit_value
-    unspecified course_type
+    int course_id PK
+    string course_code
+    string course_name
+    int credit_value
+    string course_type
   }
 
   ProgramRequirement {
-    unspecified requirement_id PK
-    unspecified program_id FK
-    unspecified course_id FK
-    unspecified requirement_type
+    int requirement_id PK
+    int program_id FK
+    int course_id FK
+    string requirement_type
   }
 
   CoursePrerequisite {
-    unspecified prerequisite_id PK
-    unspecified course_id FK
-    unspecified required_course_id FK
+    int prerequisite_id PK
+    int course_id FK
+    int required_course_id FK
   }
 
   StudentCourse {
-    unspecified student_course_id PK
-    unspecified student_id FK
-    unspecified course_id FK
-    unspecified semester
-    unspecified academic_year
-    unspecified grade
-    unspecified completion_status
+    int student_course_id PK
+    int student_id FK
+    int course_id FK
+    string semester
+    string academic_year
+    string grade
+    string completion_status
   }
 
   SemesterPlan {
-    unspecified plan_id PK
-    unspecified student_id FK
-    unspecified advisor_id FK
-    unspecified semester
-    unspecified academic_year
-    unspecified submission_date
-    unspecified approval_status
-    unspecified student_comments
+    int plan_id PK
+    int student_id FK
+    int advisor_id FK
+    string semester
+    string academic_year
+    datetime submission_date
+    string approval_status
+    string student_comments
   }
 
   SemesterPlanCourse {
-    unspecified plan_course_id PK
-    unspecified plan_id FK
-    unspecified course_id FK
+    int plan_course_id PK
+    int plan_id FK
+    int course_id FK
   }
 
   PlanReview {
-    unspecified review_id PK
-    unspecified plan_id FK
-    unspecified advisor_id FK
-    unspecified decision
-    unspecified feedback
-    unspecified review_date
+    int review_id PK
+    int plan_id FK
+    int advisor_id FK
+    string decision
+    string feedback
+    datetime review_date
   }
 
   DegreeProgram ||--o{ Student : enrolls
@@ -123,6 +123,8 @@ erDiagram
 
 Relationship and business-rule notes:
 
+- Data types follow `app/models/advising.py`: identifiers and credit/year counts are integers, labels/statuses are strings, and review/submission dates are datetimes. `Student.email` and `AcademicAdvisor.email` are account email strings managed through the linked user account. `Student.enrollment_year` remains a conceptual integer property from the student-provided model; it is not currently a separate `StudentProfile` column.
+- The diagram uses conceptual ID names; the profile tables persist their primary keys as `id`, while `student_id` and `advisor_id` on related records reference those profile IDs. Nullable fields in the implementation: `Student.program_id`, `SemesterPlan.advisor_id`, `StudentCourse.grade`, `SemesterPlan.student_comments`, and `PlanReview.feedback`; other listed foreign keys are required.
 - A student belongs to one degree program; each program can have many students.
 - `ProgramRequirement` links programs and courses many-to-many; `requirement_type` belongs to that pairing.
 - `CoursePrerequisite` links courses to prerequisite courses many-to-many, with `course_id` as the course being taken and `required_course_id` as its prerequisite.
@@ -312,7 +314,7 @@ note: Thin add handler calls the service and retains the selection in the sessio
 
 Phase 6. Public Render URL (not localhost). Markers open this to mark the three workflows.
 
-https://
+https://faststarter-0cz9.onrender.com
 
 ## Logins
 
@@ -322,6 +324,8 @@ Every account a marker needs, including extra users you added. Demo accounts see
 - admin / adminpass — academic advisor (admin)
 
 ## YouTube URL
+
+https://youtu.be/ZYucMQwzddM
 
 ## Session transcripts
 
